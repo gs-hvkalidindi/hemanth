@@ -3,15 +3,6 @@ let login = document.querySelector(".login");
 let slider = document.querySelector(".slider");
 let formSection = document.querySelector(".form-section");
 
-signup.addEventListener("click", () => {
-	slider.classList.add("moveslider");
-	formSection.classList.add("form-section-move");
-});
-
-login.addEventListener("click", () => {
-	slider.classList.remove("moveslider");
-	formSection.classList.remove("form-section-move");
-});
 <!-- Gainsight PX Tag-->
   <script type="text/javascript">
   (function(n,t,a,e,co){var i="aptrinsic";n[i]=n[i]||function(){
@@ -21,3 +12,14 @@ login.addEventListener("click", () => {
   })(window,document,"https://web-sdk.aptrinsic.com/api/aptrinsic.js","AP-HDDQKPNBMNFE-1");
 </script>
 <!-- Gainsight PX Tag-->
+
+
+signup.addEventListener("click", () => {
+	slider.classList.add("moveslider");
+	formSection.classList.add("form-section-move");
+});
+
+login.addEventListener("click", () => {
+	slider.classList.remove("moveslider");
+	formSection.classList.remove("form-section-move");
+});
