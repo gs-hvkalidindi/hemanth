@@ -12,7 +12,7 @@ The code needed to publish a Tableau Public Dashboard is available on GitHub. Th
 
 ## Create your own copies of the files
 
-1. Go to this GitHub link: https://github.com/dinkwiz/tableau_embed
+1. Go to this GitHub link: https://github.com/gs-hvkalidindi/hemanth/
 2. Open the index.html file.
 3. Highlight and copy the code.
 4. Open a new NotePad file.
@@ -58,4 +58,4 @@ View Tableau’s Embedded Analytics Playbook and information on the Tableau Java
 ## thoughts, notes and randomness
 
 To view the webpage created as part of this Tableau Embedding Project go to: 
-https://dinkwiz.github.io/tableau_embed/
+https://github.com/gs-hvkalidindi/hemanth/
