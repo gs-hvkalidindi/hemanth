@@ -1,13 +1,22 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const logoutButton = document.getElementById("logoutButton");
+// logout.js
 
-    if (logoutButton) {
-        logoutButton.addEventListener("click", function () {
-            // Clear logged-in state from sessionStorage
-            sessionStorage.removeItem("loggedIn");
+// Function to handle logout
+function logout() {
+    // Clear session storage
+    sessionStorage.removeItem('loggedIn');
+    // Redirect to sign-in page
+    window.location.href = 'signin.html';
+}
 
-            // Redirect to the login page
-            window.location.href = "signin.html";
+// Add event listener to logout link/button
+document.addEventListener('DOMContentLoaded', function() {
+    // Assuming you have a logout link in your navbar dropdown
+    const logoutLink = document.querySelector('#logout-link');
+
+    if (logoutLink) {
+        logoutLink.addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent default link behavior
+            logout(); // Call logout function
         });
     }
 });
