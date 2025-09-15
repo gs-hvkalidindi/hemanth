@@ -62,7 +62,7 @@
                     <div class="d-flex align-items-center justify-content-between mb-4">
                         <div class="form-check">
                             <input type="checkbox" class="form-check-input" id="exampleCheck1">
-                            <label class="form-check-label" for="exampleCheck1">Check me out</label>
+                            <label class="form-check-label" for="exampleCheck1">Remember me</label>
                         </div>
                         <a href="">Forgot Password</a>
                     </div>
@@ -77,20 +77,13 @@
 <!-- JS Libraries -->
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="lib/chart/chart.min.js"></script>
-<script src="lib/easing/easing.min.js"></script>
-<script src="lib/waypoints/waypoints.min.js"></script>
-<script src="lib/owlcarousel/owl.carousel.min.js"></script>
-<script src="lib/tempusdominus/js/moment.min.js"></script>
-<script src="lib/tempusdominus/js/moment-timezone.min.js"></script>
-<script src="lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
 
 <!-- Users -->
 <script src="js/users.js"></script>
 
 <!-- Signin Logic -->
 <script>
-    // Hide spinner on page load
+    // Hide spinner on load
     window.addEventListener('load', function() {
         const spinner = document.getElementById('spinner');
         if (spinner) spinner.classList.remove('show');
@@ -102,6 +95,7 @@
         return email.split("@")[0].replace(/\+/g, "-").replace(/\./g, "-").toLowerCase();
     }
 
+    // Sign in button logic
     document.getElementById('signinButton').addEventListener('click', function(event) {
         event.preventDefault();
 
@@ -116,9 +110,15 @@
         const userObj = users.find(u => u.email === email && u.password === password);
 
         if (userObj) {
+            // Store session info
             sessionStorage.setItem('loggedIn', 'true');
+            sessionStorage.setItem('firstName', userObj.firstName || "");
+            sessionStorage.setItem('lastName', userObj.lastName || "");
+            sessionStorage.setItem('email', userObj.email);
+
             const userId = generateUserId(email);
 
+            // Identify user for Gainsight
             aptrinsic("identify",
             {
                 id: userId,
@@ -139,6 +139,18 @@
             window.location.href = 'index.html';
         } else {
             alert('Invalid email or password');
+        }
+    });
+
+    // Logout script
+    document.addEventListener('DOMContentLoaded', function() {
+        const logoutLink = document.getElementById('logout-link');
+        if (logoutLink) {
+            logoutLink.addEventListener('click', function(event) {
+                event.preventDefault();
+                sessionStorage.clear();
+                window.location.href = 'signin.html';
+            });
         }
     });
 </script>
