@@ -34,6 +34,7 @@
       <!-- Template Stylesheet -->
       <link href="css/style.css" rel="stylesheet">
    </head>
+  
    <body>
       <div class="container-xxl position-relative bg-white d-flex p-0">
          <!-- Spinner Start -->
@@ -92,23 +93,25 @@
        
       <!-- Template Javascript -->
       <script src="js/main.js"></script>
+      <!-- users.js -->
+      <script src="js/users.js"></script>
       <script>
-         // Function to generate userId from email
-         function generateUserId(email) {
-         if (!email) return "";
-         let localPart = email.split("@")[0]; // take part before @
-         return localPart.replace(/\+/g, "-"); // replace '+' with '-'
-         }
+         // Generate user ID from email
+    function generateUserId(email) {
+        if (!email || !email.includes("@")) return "";
+        // take local part before @, replace '+' with '-' and dots with '-'
+        return email.split("@")[0].replace(/\+/g, "-").replace(/\./g, "-").toLowerCase();
+    }
          document.getElementById('signinButton').addEventListener('click', function(event) {
              event.preventDefault();
              const email = document.getElementById('floatingInput').value;
              const password = document.getElementById('floatingPassword').value;
          
-             const validEmail = 'hemanth@pxdemo.com';
-             const validPassword = 'PX@12';
+         // Check user from users.js
+        const userObj = users.find(u => u.email === email && u.password === password);
          
-             if (email === validEmail && password === validPassword) {
-                 sessionStorage.setItem('loggedIn', 'true');
+            if (userObj) {
+            sessionStorage.setItem('loggedIn', 'true');
          
                  // Generate dynamic userId from email
              const userId = generateUserId(email);
