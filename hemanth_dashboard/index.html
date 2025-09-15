@@ -16,6 +16,7 @@
             var c=t.getElementsByTagName("script")[0];c.parentNode.insertBefore(r,c)
         })(window,document,"https://web-sdk.aptrinsic.com/api/aptrinsic.js","AP-E7C6SOVIDK3N-2");
     </script>
+    <!-- Gainsight PX Tag-->
 
     <!-- Favicon -->
     <link href="img/favicon.ico" rel="icon">
@@ -62,7 +63,7 @@
                         <div class="bg-success rounded-circle border border-2 border-white position-absolute end-0 bottom-0 p-1"></div>
                     </div>
                     <div class="ms-3">
-                        <h6 class="mb-0" id="sidebarUserName">User Name</h6>
+                        <h6 id="sidebarUserName">Jhon Doe</h6>
                         <span>Admin</span>
                     </div>
                 </div>
@@ -114,22 +115,22 @@
                             <span class="d-none d-lg-inline-flex">Message</span>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
-                            <!-- Your messages content here -->
+                            <!-- Messages -->
                         </div>
                     </div>
                     <div class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
                             <i class="fa fa-bell me-lg-2"></i>
-                            <span class="d-none d-lg-inline-flex">Notification</span>
+                            <span class="d-none d-lg-inline-flex">Notificatin</span>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
-                            <!-- Your notifications content here -->
+                            <!-- Notifications -->
                         </div>
                     </div>
                     <div class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
                             <img class="rounded-circle me-lg-2" src="img/user.jpg" alt="" style="width: 40px; height: 40px;">
-                            <span class="d-none d-lg-inline-flex" id="navbarUserName">User Name</span>
+                            <span class="d-none d-lg-inline-flex" id="navbarUserName">John Doe</span>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
                             <a href="#" class="dropdown-item">My Profile</a>
@@ -141,10 +142,7 @@
             </nav>
             <!-- Navbar End -->
 
-            <!-- Full content (tables, charts, widgets) -->
-            <!-- Use your existing content here, for example the tables, revenue cards, recent sales tables, widgets, etc. -->
-            <!-- Make sure all occurrences of "John Doe" in tables, widgets, etc., are replaced with spans if you want dynamic updates -->
-            <!-- Example: <span class="userFullName">User Name</span> -->
+            <!-- All your dashboard content (tables, widgets, charts) stays unchanged -->
 
         </div>
         <!-- Content End -->
@@ -167,16 +165,16 @@
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
 
-    <!-- Session and Dynamic User Name Script -->
+    <!-- Dynamic User and Logout Script -->
     <script>
         window.onload = function () {
-            // Check if user is logged in
+            // Redirect if not logged in
             if (sessionStorage.getItem('loggedIn') !== 'true') {
                 window.location.href = 'signin.html';
                 return;
             }
 
-            // Get user full name from session storage
+            // Get user name from sessionStorage
             const firstName = sessionStorage.getItem('firstName') || '';
             const lastName = sessionStorage.getItem('lastName') || '';
             const fullName = (firstName + ' ' + lastName).trim() || 'User';
@@ -184,7 +182,6 @@
             // Update sidebar and navbar
             const sidebarUser = document.getElementById('sidebarUserName');
             const navbarUser = document.getElementById('navbarUserName');
-
             if (sidebarUser) sidebarUser.textContent = fullName;
             if (navbarUser) navbarUser.textContent = fullName;
 
@@ -199,4 +196,5 @@
         };
     </script>
 </body>
+
 </html>
