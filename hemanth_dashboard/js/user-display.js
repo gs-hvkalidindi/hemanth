@@ -1,23 +1,41 @@
-document.addEventListener('DOMContentLoaded', function () {
-    // Get user info from localStorage first, fallback to sessionStorage
-    const firstName = localStorage.getItem('firstName') || sessionStorage.getItem('firstName') || '';
-    const lastName = localStorage.getItem('lastName') || sessionStorage.getItem('lastName') || '';
-    const fullName = `${firstName} ${lastName}`.trim() || 'John Doe';
+// user-display.js
 
-    // Update all nav-item dropdown user names
-    const dropdowns = document.querySelectorAll('.nav-item.dropdown');
-    dropdowns.forEach(el => {
-        const span = el.querySelector('span');
-        if (span && span.textContent.includes('John Doe')) {
-            span.textContent = fullName;
-        }
+function getUserFullName() {
+    const firstName = localStorage.getItem('firstName') || sessionStorage.getItem('firstName') || 'John';
+    const lastName = localStorage.getItem('lastName') || sessionStorage.getItem('lastName') || 'Doe';
+    return `${firstName} ${lastName}`;
+}
+
+function updateUserNames() {
+    const fullName = getUserFullName();
+
+    // Navbar dropdown
+    const navDropdown = document.querySelector('.nav-item.dropdown > a span.d-none.d-lg-inline-flex');
+    if (navDropdown) navDropdown.textContent = fullName;
+
+    // Sidebar .ms-3 divs
+    const sidebarNameDivs = document.querySelectorAll('.sidebar .ms-3 h6');
+    sidebarNameDivs.forEach(div => div.textContent = fullName);
+
+    // Recent sales table names
+    const tableNames = document.querySelectorAll('tbody tr td:nth-child(4)');
+    tableNames.forEach(td => {
+        if (td.textContent.trim() === 'Jhon Doe') td.textContent = fullName;
     });
 
-    // Update all ms-3 divs (sidebar or message sections)
-    const ms3Divs = document.querySelectorAll('.ms-3');
-    ms3Divs.forEach(el => {
-        if (el.textContent.includes('Jhon Doe')) {
-            el.textContent = el.textContent.replace(/Jhon Doe/g, fullName);
-        }
+    // Messages names
+    const messageNames = document.querySelectorAll('.h-100 .d-flex.w-100.justify-content-between h6.mb-0');
+    messageNames.forEach(h6 => {
+        if (h6.textContent.includes('Jhon Doe')) h6.textContent = fullName;
     });
+}
+
+// Run after DOM is loaded
+document.addEventListener('DOMContentLoaded', updateUserNames);
+
+// Listen to storage changes (cross-tab login/logout)
+window.addEventListener('storage', function(event) {
+    if (event.key === 'firstName' || event.key === 'lastName' || event.key === 'logoutEvent') {
+        updateUserNames();
+    }
 });
