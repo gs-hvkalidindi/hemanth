@@ -2,8 +2,12 @@
 
 // Function to handle logout
 function logout() {
-    // Clear session storage
-    sessionStorage.removeItem('loggedIn');
+    // Clear all stored login info
+    localStorage.removeItem('loggedIn');
+    localStorage.removeItem('firstName');
+    localStorage.removeItem('lastName');
+    localStorage.removeItem('email');
+
     // Redirect to sign-in page
     window.location.href = 'signin.html';
 }
