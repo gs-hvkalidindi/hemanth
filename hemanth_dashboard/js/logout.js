@@ -1,26 +1,45 @@
 // logout.js
 
-// Function to handle logout
-function logout() {
-    // Clear all stored login info
-    localStorage.removeItem('loggedIn');
-    localStorage.removeItem('firstName');
-    localStorage.removeItem('lastName');
-    localStorage.removeItem('email');
-
-    // Redirect to sign-in page
-    window.location.href = 'signin.html';
+function clearAllCookies() {
+    // Clear all client-side cookies
+    document.cookie.split(";").forEach(function(c) {
+        document.cookie = c.trim().split("=")[0] + 
+            "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/";
+    });
 }
 
-// Add event listener to logout link/button
-document.addEventListener('DOMContentLoaded', function() {
-    // Assuming you have a logout link in your navbar dropdown
-    const logoutLink = document.querySelector('#logout-link');
+function logout() {
+    // Clear storages
+    localStorage.clear();
+    sessionStorage.clear();
+
+    // Clear cookies
+    clearAllCookies();
+
+    // Reset Gainsight PX session if loaded
+    if (typeof aptrinsic !== "undefined") {
+        try {
+            aptrinsic("reset");
+        } catch (e) {
+            console.warn("PX reset failed:", e);
+        }
+    }
+
+    // Sync logout across multiple tabs
+    localStorage.setItem("logoutEvent", Date.now());
+
+    // Redirect to signin
+    window.location.href = "signin.html";
+}
+
+// Add listener to logout link/button
+document.addEventListener("DOMContentLoaded", function() {
+    const logoutLink = document.querySelector("#logout-link");
 
     if (logoutLink) {
-        logoutLink.addEventListener('click', function(event) {
-            event.preventDefault(); // Prevent default link behavior
-            logout(); // Call logout function
+        logoutLink.addEventListener("click", function(event) {
+            event.preventDefault();
+            logout();
         });
     }
 });
