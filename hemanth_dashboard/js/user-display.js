@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // Get user info from localStorage
-    const firstName = localStorage.getItem('firstName') || '';
-    const lastName = localStorage.getItem('lastName') || '';
+    // Get user info from localStorage first, fallback to sessionStorage
+    const firstName = localStorage.getItem('firstName') || sessionStorage.getItem('firstName') || '';
+    const lastName = localStorage.getItem('lastName') || sessionStorage.getItem('lastName') || '';
     const fullName = `${firstName} ${lastName}`.trim() || 'John Doe';
 
     // Update all nav-item dropdown user names
