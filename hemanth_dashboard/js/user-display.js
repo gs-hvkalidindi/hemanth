@@ -4,17 +4,18 @@ document.addEventListener('DOMContentLoaded', function () {
     const lastName = localStorage.getItem('lastName') || '';
     const fullName = `${firstName} ${lastName}`.trim() || 'John Doe';
 
-    // Update sidebar
-    const sidebarName = document.getElementById('sidebar-name');
-    if (sidebarName) sidebarName.textContent = fullName;
+    // Update all nav-item dropdown user names
+    const dropdowns = document.querySelectorAll('.nav-item.dropdown');
+    dropdowns.forEach(el => {
+        const span = el.querySelector('span');
+        if (span && span.textContent.includes('John Doe')) {
+            span.textContent = fullName;
+        }
+    });
 
-    // Update navbar
-    const navbarName = document.getElementById('navbar-name');
-    if (navbarName) navbarName.textContent = fullName;
-
-    // Update any table or message placeholders (replace all occurrences of "Jhon Doe")
-    const placeholders = document.querySelectorAll('td, h6, span');
-    placeholders.forEach(el => {
+    // Update all ms-3 divs (sidebar or message sections)
+    const ms3Divs = document.querySelectorAll('.ms-3');
+    ms3Divs.forEach(el => {
         if (el.textContent.includes('Jhon Doe')) {
             el.textContent = el.textContent.replace(/Jhon Doe/g, fullName);
         }
