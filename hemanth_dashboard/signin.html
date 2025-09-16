@@ -110,11 +110,11 @@
         const userObj = users.find(u => u.email === email && u.password === password);
 
         if (userObj) {
-            // Store session info
-            sessionStorage.setItem('loggedIn', 'true');
-            sessionStorage.setItem('firstName', userObj.firstName || "");
-            sessionStorage.setItem('lastName', userObj.lastName || "");
-            sessionStorage.setItem('email', userObj.email);
+          // Store login info (use localStorage for cross-tab sync)
+            localStorage.setItem('loggedIn', 'true');
+            localStorage.setItem('firstName', userObj.firstName || "");
+            localStorage.setItem('lastName', userObj.lastName || "");
+            localStorage.setItem('email', userObj.email);
 
             const userId = generateUserId(email);
 
@@ -148,7 +148,7 @@
         if (logoutLink) {
             logoutLink.addEventListener('click', function(event) {
                 event.preventDefault();
-                sessionStorage.clear();
+                localStorage.clear();
                 window.location.href = 'signin.html';
             });
         }
