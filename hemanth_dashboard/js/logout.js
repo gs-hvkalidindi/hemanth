@@ -1,17 +1,19 @@
 // logout.js
 
 function clearAllCookies() {
-    // Clear all client-side cookies
     document.cookie.split(";").forEach(function(c) {
-        document.cookie = c.trim().split("=")[0] + 
+        document.cookie = c.trim().split("=")[0] +
             "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/";
     });
 }
 
 function logout() {
     // Clear storages
-    localStorage.clear();
+    localStorage.removeItem("loggedIn");
     sessionStorage.clear();
+    localStorage.removeItem("firstName");
+    localStorage.removeItem("lastName");
+    localStorage.removeItem("email");
 
     // Clear cookies
     clearAllCookies();
@@ -25,21 +27,27 @@ function logout() {
         }
     }
 
-    // Sync logout across multiple tabs
+    // Broadcast logout only when user clicks logout
     localStorage.setItem("logoutEvent", Date.now());
 
-    // Redirect to signin
+    // Redirect
     window.location.href = "signin.html";
 }
 
-// Add listener to logout link/button
+// Attach logout handler to button/link
 document.addEventListener("DOMContentLoaded", function() {
     const logoutLink = document.querySelector("#logout-link");
-
     if (logoutLink) {
         logoutLink.addEventListener("click", function(event) {
             event.preventDefault();
             logout();
         });
+    }
+});
+
+// Listen for logout in other tabs
+window.addEventListener("storage", function(event) {
+    if (event.key === "logoutEvent") {
+        window.location.href = "signin.html";
     }
 });
