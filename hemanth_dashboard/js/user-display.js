@@ -1,33 +1,11 @@
-// user-display.js
-
-function checkLogin() {
-    if (localStorage.getItem('loggedIn') !== 'true') {
-        window.location.href = 'signin.html';
-    } else {
-        displayUserName();
-    }
-}
-
-function displayUserName() {
+document.addEventListener('DOMContentLoaded', function () {
     const firstName = localStorage.getItem('firstName') || '';
     const lastName = localStorage.getItem('lastName') || '';
-    const fullName = `${firstName} ${lastName}`;
+    const fullName = `${firstName} ${lastName}`.trim();
 
-    // Replace navbar name
-    const navName = document.querySelector('.nav-item .d-none.d-lg-inline-flex');
-    if (navName) navName.textContent = fullName;
+    const sidebarName = document.getElementById('sidebar-name');
+    const navbarName = document.getElementById('navbar-name');
 
-    // Replace sidebar name
-    const sidebarName = document.querySelector('.sidebar .ms-3 h6.mb-0');
     if (sidebarName) sidebarName.textContent = fullName;
-}
-
-// Listen for logout in other tabs
-window.addEventListener('storage', function(event) {
-    if (event.key === 'logout-event') {
-        window.location.href = 'signin.html';
-    }
+    if (navbarName) navbarName.textContent = fullName;
 });
-
-// Run on page load
-window.addEventListener('load', checkLogin);
