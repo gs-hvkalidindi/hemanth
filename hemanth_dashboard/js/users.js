@@ -32,7 +32,7 @@ const users = [
     AccountName:"International Business Machine"
   },
   {
-    email: "gstesting_1@proton.me",
+    email: "Gstesting_1@proton.me",
     password: "Guest@123",
     firstName: "GS",
     lastName: "Proton",
