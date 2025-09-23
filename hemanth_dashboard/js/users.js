@@ -6,7 +6,7 @@ const users = [
     password: "PX@12",
     firstName: "Hemanth",
     lastName: "demo",
-    plan: "gold",
+    plan: "Gold",
     price: "999"
   },
   {
@@ -14,7 +14,7 @@ const users = [
     password: "Guest@123",
     firstName: "GS",
     lastName: "Outlook",
-    plan: "silver",
+    plan: "Silver",
     price: "699"
   },
   {
@@ -22,7 +22,7 @@ const users = [
     password: "Guest@123",
     firstName: "Hemanth",
     lastName: "PX",
-    plan: "gold",
-    price: "999"
+    plan: "Bronze",
+    price: "399"
   }
 ];
