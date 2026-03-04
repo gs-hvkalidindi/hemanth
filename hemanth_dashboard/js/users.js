@@ -40,5 +40,15 @@ const users = [
     price: "399",
     AccountId:"SFDC",
     AccountName:"Salesforce.com"
+  },
+  {
+    email: "gstesting_1@yahoo.com",
+    password: "Guest@123",
+    firstName: "GS",
+    lastName: "Yahoo",
+    plan: "Gold",
+    price: "15080",
+    AccountId:"sForce",
+    AccountName:"sForce"
   }
 ];
