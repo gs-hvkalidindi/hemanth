@@ -137,6 +137,9 @@ END - */
 
             const userId = generateUserId(email);
 
+            // add aptrinsic reset logic
+            window.aptrinsic('reset');
+
             // Identify user for Gainsight
             aptrinsic("identify",
             {
