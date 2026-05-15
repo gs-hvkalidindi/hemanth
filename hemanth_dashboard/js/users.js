@@ -50,5 +50,15 @@ const users = [
     price: "15080",
     AccountId:"sForce",
     AccountName:"sForce"
+  },
+  {
+    email: "abtestgathor@gmail.com",
+    password: "Guest@123",
+    firstName: "Abtest",
+    lastName: "Thor",
+    plan: "Gold",
+    price: "12180",
+    AccountId:"IBM",
+    AccountName:"IBM"
   }
 ];
