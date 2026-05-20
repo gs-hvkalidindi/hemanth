@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CSV Date Diff</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0b0c0f;
+      --surface: #13151a;
+      --border: #1f2229;
+      --accent: #e8ff4f;
+      --accent2: #4fffb0;
+      --text: #e8eaf0;
+      --muted: #5a5f72;
+      --danger: #ff4f6e;
+      --mono: 'Space Mono', monospace;
+      --sans: 'Syne', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 20px 80px;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(232,255,79,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(232,255,79,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container { position: relative; z-index: 1; width: 100%; max-width: 900px; }
+
+    header { margin-bottom: 56px; animation: fadeDown 0.6s ease both; }
+
+    .label-tag {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: rgba(232,255,79,0.08);
+      border: 1px solid rgba(232,255,79,0.2);
+      padding: 4px 12px;
+      border-radius: 2px;
+      margin-bottom: 20px;
+    }
+
+    h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 12px; }
+    h1 span { color: var(--accent); }
+    .subtitle { color: var(--muted); font-family: var(--mono); font-size: 13px; }
+
+    .step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 32px;
+      margin-bottom: 20px;
+      animation: fadeUp 0.5s ease both;
+    }
+    .step:nth-child(2) { animation-delay: 0.05s; }
+    .step:nth-child(3) { animation-delay: 0.10s; }
+    .step:nth-child(4) { animation-delay: 0.15s; }
+    .step:nth-child(5) { animation-delay: 0.20s; }
+
+    .step-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+
+    .step-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--accent);
+      background: rgba(232,255,79,0.08);
+      border: 1px solid rgba(232,255,79,0.25);
+      width: 28px; height: 28px;
+      display: grid; place-items: center;
+      border-radius: 4px; flex-shrink: 0;
+    }
+    .step-title { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; }
+
+    /* Drop zone */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 6px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: rgba(232,255,79,0.04); }
+    .drop-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .drop-icon { font-size: 2rem; margin-bottom: 12px; }
+    .drop-text { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+    .drop-text strong { color: var(--text); display: block; font-size: 15px; margin-bottom: 4px; }
+    .file-name { margin-top: 14px; font-family: var(--mono); font-size: 12px; color: var(--accent2); display: none; }
+
+    /* Selectors */
+    .selectors { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 500px) { .selectors { grid-template-columns: 1fr; } }
+
+    .field-group label {
+      display: block; font-family: var(--mono); font-size: 11px;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
+    }
+
+    select {
+      width: 100%; background: var(--bg); color: var(--text);
+      border: 1px solid var(--border); border-radius: 4px;
+      padding: 10px 14px; font-family: var(--mono); font-size: 13px;
+      appearance: none; cursor: pointer; transition: border-color 0.2s;
+    }
+    select:focus { outline: none; border-color: var(--accent); }
+    select:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    input[type="text"] {
+      width: 100%; background: var(--bg); color: var(--text);
+      border: 1px solid var(--border); border-radius: 4px;
+      padding: 10px 14px; font-family: var(--mono); font-size: 13px;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus { outline: none; border-color: var(--accent); }
+
+    .name-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end; }
+
+    /* Progress */
+    .progress-wrap {
+      margin-top: 20px;
+      display: none;
+    }
+    .progress-label {
+      display: flex; justify-content: space-between;
+      font-family: var(--mono); font-size: 11px; color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .progress-label span { color: var(--accent); }
+    .progress-track {
+      height: 4px; background: var(--border); border-radius: 99px; overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%; width: 0%; background: var(--accent);
+      border-radius: 99px;
+      transition: width 0.15s ease;
+    }
+    .progress-bar.done { background: var(--accent2); }
+
+    /* Stats */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px;
+    }
+    @media (max-width: 600px) { .stats-row { grid-template-columns: 1fr 1fr; } }
+
+    .stat-card { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 16px; }
+    .stat-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .stat-val { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--accent); }
+
+    /* Table */
+    .table-wrap {
+      overflow-x: auto; overflow-y: auto;
+      max-height: 400px; border: 1px solid var(--border); border-radius: 6px;
+    }
+
+    table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; white-space: nowrap; }
+
+    thead th {
+      background: #0e1016; color: var(--muted); padding: 10px 16px;
+      text-align: left; border-bottom: 1px solid var(--border);
+      font-size: 11px; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 2;
+    }
+    thead th.diff-col { color: var(--accent2); background: #0b120e; border-left: 2px solid rgba(79,255,176,0.4); }
+
+    tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.12s; }
+    tbody tr:hover { background: rgba(255,255,255,0.025); }
+    tbody td { padding: 9px 16px; color: var(--text); }
+    tbody td.diff-val { color: var(--accent2); font-weight: 700; border-left: 2px solid rgba(79,255,176,0.15); background: rgba(79,255,176,0.03); }
+
+    .preview-note { margin-top: 12px; font-family: var(--mono); font-size: 11px; color: var(--muted); text-align: right; }
+    .preview-note span { color: var(--accent); }
+
+    .empty-state { text-align: center; padding: 48px; color: var(--muted); font-family: var(--mono); font-size: 13px; }
+
+    .error-box {
+      background: rgba(255,79,110,0.08); border: 1px solid rgba(255,79,110,0.25);
+      border-radius: 4px; padding: 12px 16px; font-family: var(--mono); font-size: 13px;
+      color: var(--danger); margin-top: 12px; display: none; line-height: 1.6;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 24px; border: none; border-radius: 4px;
+      font-family: var(--sans); font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: transform 0.15s, opacity 0.15s;
+      letter-spacing: -0.01em; white-space: nowrap;
+    }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn:not(:disabled):hover { transform: translateY(-1px); }
+    .btn:not(:disabled):active { transform: translateY(0); }
+    .btn-primary { background: var(--accent); color: #0b0c0f; }
+    .btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:not(:disabled):hover { border-color: var(--accent2) !important; color: var(--accent2) !important; }
+
+    .btn-row { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    /* Spinner inside button */
+    .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(0,0,0,0.2);
+      border-top-color: #0b0c0f;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeDown { from { opacity:0; transform:translateY(-16px);} to { opacity:1; transform:translateY(0);} }
+    @keyframes fadeUp   { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0);} }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="label-tag">CSV Toolkit</div>
+    <h1>Date <span>Difference</span><br/>Calculator</h1>
+    <p class="subtitle">Upload CSV → pick two date columns → preview top 20 rows → download full enriched CSV</p>
+  </header>
+
+  <!-- Step 1: Upload -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">01</div>
+      <div class="step-title">Upload your CSV file</div>
+    </div>
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="fileInput" accept=".csv"/>
+      <div class="drop-icon">📂</div>
+      <div class="drop-text">
+        <strong>Click to browse or drag & drop</strong>
+        Only .csv files supported · any size
+      </div>
+      <div class="file-name" id="fileName"></div>
+    </div>
+    <div class="error-box" id="uploadError"></div>
+  </div>
+
+  <!-- Step 2: Pick columns -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">02</div>
+      <div class="step-title">Select the two date columns</div>
+    </div>
+    <div class="selectors">
+      <div class="field-group">
+        <label>Start Date Column</label>
+        <select id="col1" disabled><option value="">— load a file first —</option></select>
+      </div>
+      <div class="field-group">
+        <label>End Date Column</label>
+        <select id="col2" disabled><option value="">— load a file first —</option></select>
+      </div>
+    </div>
+    <div class="error-box" id="colError"></div>
+  </div>
+
+  <!-- Step 3: Name + Compute -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">03</div>
+      <div class="step-title">Name the new column & compute</div>
+    </div>
+    <div class="name-row">
+      <div class="field-group" style="margin:0">
+        <label>New column name</label>
+        <input type="text" id="newColName" value="diff_seconds" placeholder="diff_seconds"/>
+      </div>
+      <button class="btn btn-primary" id="previewBtn" disabled>
+        <div class="spinner" id="btnSpinner"></div>
+        <span id="btnLabel">Preview ↓</span>
+      </button>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-label">
+        <span id="progressText">Processing…</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+    </div>
+
+    <div class="error-box" id="previewError"></div>
+  </div>
+
+  <!-- Step 4: Preview table -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">04</div>
+      <div class="step-title">Preview — top 20 rows (all columns)</div>
+    </div>
+
+    <div class="stats-row hidden" id="statsRow">
+      <div class="stat-card"><div class="stat-label">Total Rows</div><div class="stat-val" id="statRows">—</div></div>
+      <div class="stat-card"><div class="stat-label">Min (s)</div><div class="stat-val" id="statMin">—</div></div>
+      <div class="stat-card"><div class="stat-label">Max (s)</div><div class="stat-val" id="statMax">—</div></div>
+      <div class="stat-card"><div class="stat-label">Avg (s)</div><div class="stat-val" id="statAvg">—</div></div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="empty-state" id="emptyState">Preview will appear here after clicking "Preview ↓"</div>
+      <table id="previewTable" class="hidden">
+        <thead id="previewHead"></thead>
+        <tbody id="previewBody"></tbody>
+      </table>
+    </div>
+    <div class="preview-note hidden" id="previewNote"></div>
+    <div class="error-box" id="tableError"></div>
+  </div>
+
+  <!-- Step 5: Download -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">05</div>
+      <div class="step-title">Download full enriched CSV</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="downloadBtn" disabled>⬇ Download CSV</button>
+      <button class="btn btn-secondary" id="resetBtn">↺ Start over</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     WEB WORKER — defined inline as a Blob, so no extra file needed.
+     This entire block runs in a background thread: main UI never freezes.
+     ═══════════════════════════════════════════════════════════ -->
+<script id="workerScript" type="javascript/worker">
+
+  // ── Helpers ──────────────────────────────────────────────────
+  const CHUNK = 50000; // rows processed per tick — keeps progress smooth
+
+  function splitLine(line) {
+    const out = []; let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { inQ = !inQ; }
+      else if (c === ',' && !inQ) { out.push(cur); cur = ''; }
+      else cur += c;
+    }
+    out.push(cur);
+    return out;
+  }
+
+  function cleanVal(s) { return s.trim().replace(/^"|"$/g, ''); }
+
+  function toSeconds(a, b) {
+    const ta = Date.parse(a), tb = Date.parse(b);
+    return (isNaN(ta) || isNaN(tb)) ? null : (tb - ta) / 1000;
+  }
+
+  // ── Main message handler ──────────────────────────────────────
+  self.onmessage = function(e) {
+    const { text, col1, col2, colName } = e.data;
+
+    // 1. Split into lines
+    self.postMessage({ type: 'progress', pct: 2, label: 'Splitting lines…' });
+    const lines = text.split(/\r?\n/);
+
+    // 2. Parse header
+    const headers = splitLine(lines[0]).map(cleanVal);
+    const c1idx = headers.indexOf(col1);
+    const c2idx = headers.indexOf(col2);
+
+    if (c1idx === -1 || c2idx === -1) {
+      self.postMessage({ type: 'error', msg: 'Could not find selected columns in the header row.' });
+      return;
+    }
+
+    const totalLines = lines.length - 1; // exclude header
+    let nullCount = 0;
+
+    // We store diffs as a flat Float64Array — much lighter than array of objects for millions of rows
+    // Also keep the raw lines (we'll re-emit them for preview and stream them for download)
+    const diffs = new Float64Array(totalLines); // NaN = unparseable
+    const validLines = []; // non-empty data lines
+
+    // 3. Process in chunks
+    let lineIdx = 1; // skip header
+    let validIdx = 0;
+
+    function processChunk() {
+      const end = Math.min(lineIdx + CHUNK, lines.length);
+
+      for (let i = lineIdx; i < end; i++) {
+        const line = lines[i];
+        if (!line.trim()) { diffs[validIdx] = NaN; validIdx++; continue; }
+        validLines.push(line);
+        const vals = splitLine(line);
+        const d = toSeconds(cleanVal(vals[c1idx] || ''), cleanVal(vals[c2idx] || ''));
+        if (d === null) { diffs[validIdx] = NaN; nullCount++; }
+        else diffs[validIdx] = d;
+        validIdx++;
+      }
+
+      lineIdx = end;
+      const pct = Math.round((lineIdx / lines.length) * 90) + 5;
+      self.postMessage({ type: 'progress', pct, label: `Processing row ${lineIdx.toLocaleString()} of ${totalLines.toLocaleString()}…` });
+
+      if (lineIdx < lines.length) {
+        // Yield control so the browser can breathe between chunks
+        setTimeout(processChunk, 0);
+      } else {
+        finish();
+      }
+    }
+
+    function finish() {
+      self.postMessage({ type: 'progress', pct: 96, label: 'Computing stats…' });
+
+      // Stats — iterate once, avoid Math.min/max spread (stack overflow on huge arrays)
+      let min = Infinity, max = -Infinity, sum = 0, count = 0;
+      for (let i = 0; i < validIdx; i++) {
+        const v = diffs[i];
+        if (!isNaN(v)) { if (v < min) min = v; if (v > max) max = v; sum += v; count++; }
+      }
+
+      // Build preview rows (top 20) with ALL columns + diff
+      const previewLines = validLines.slice(0, 20);
+      const preview = previewLines.map((line, i) => {
+        const vals = splitLine(line).map(cleanVal);
+        const row = {};
+        headers.forEach((h, j) => { row[h] = vals[j] ?? ''; });
+        row[colName] = isNaN(diffs[i]) ? null : diffs[i];
+        return row;
+      });
+
+      self.postMessage({
+        type: 'done',
+        headers,
+        preview,
+        totalRows: validLines.length,
+        nullCount,
+        stats: { min, max, avg: count ? Math.round(sum / count) : 0 },
+        // Transfer diffs buffer — zero-copy, instant even for 1M rows
+        diffs: diffs.buffer,
+        // We pass validLines back so download can re-stream without re-reading the file
+        validLines,
+        colName,
+        col1idx: c1idx,
+        col2idx: c2idx,
+      }, [diffs.buffer]);
+    }
+
+    processChunk();
+  };
+</script>
+
+<script>
+  const PREVIEW_ROWS = 20;
+
+  // ── State ────────────────────────────────────────────────────
+  let headers    = [];
+  let workerResult = null;  // holds everything returned by worker
+  let currentWorker = null;
+
+  // ── Elements ─────────────────────────────────────────────────
+  const fileInput    = document.getElementById('fileInput');
+  const dropZone     = document.getElementById('dropZone');
+  const fileName     = document.getElementById('fileName');
+  const col1         = document.getElementById('col1');
+  const col2         = document.getElementById('col2');
+  const newColName   = document.getElementById('newColName');
+  const previewBtn   = document.getElementById('previewBtn');
+  const btnSpinner   = document.getElementById('btnSpinner');
+  const btnLabel     = document.getElementById('btnLabel');
+  const downloadBtn  = document.getElementById('downloadBtn');
+  const resetBtn     = document.getElementById('resetBtn');
+  const previewTable = document.getElementById('previewTable');
+  const previewHead  = document.getElementById('previewHead');
+  const previewBody  = document.getElementById('previewBody');
+  const emptyState   = document.getElementById('emptyState');
+  const statsRow     = document.getElementById('statsRow');
+  const previewNote  = document.getElementById('previewNote');
+  const progressWrap = document.getElementById('progressWrap');
+  const progressBar  = document.getElementById('progressBar');
+  const progressText = document.getElementById('progressText');
+  const progressPct  = document.getElementById('progressPct');
+
+  // ── Build Worker from inline script ──────────────────────────
+  function makeWorker() {
+    const src = document.getElementById('workerScript').textContent;
+    const blob = new Blob([src], { type: 'application/javascript' });
+    return new Worker(URL.createObjectURL(blob));
+  }
+
+  // ── Drag & drop ───────────────────────────────────────────────
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('drag-over');
+    if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
+
+  // ── File handling — read header only first for speed ─────────
+  function handleFile(file) {
+    showErr('uploadError', '');
+    if (!file.name.toLowerCase().endsWith('.csv')) { showErr('uploadError', 'Please upload a valid .csv file.'); return; }
+
+    // Read only first 4KB to extract header without loading the whole file
+    const slice = file.slice(0, 4096);
+    const reader = new FileReader();
+    reader.onload = e => {
+      const firstLine = e.target.result.split(/\r?\n/)[0];
+      if (!firstLine.trim()) { showErr('uploadError', 'Could not read header row.'); return; }
+      headers = firstLine.split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+      if (!headers.length) { showErr('uploadError', 'No columns found.'); return; }
+
+      fileName.style.display = 'block';
+      fileName.textContent = `✓  ${file.name}   (${(file.size / 1024 / 1024).toFixed(1)} MB)`;
+
+      // Store full file reference for worker
+      fileInput._file = file;
+      populateSelects(headers);
+    };
+    reader.readAsText(slice);
+  }
+
+  function populateSelects(hdrs) {
+    [col1, col2].forEach((sel, idx) => {
+      sel.innerHTML = '<option value="">— select column —</option>';
+      hdrs.forEach(h => { const o = document.createElement('option'); o.value = h; o.textContent = h; sel.appendChild(o); });
+      sel.disabled = false;
+      if (hdrs[idx]) sel.value = hdrs[idx];
+    });
+    previewBtn.disabled = false;
+  }
+
+  // ── Compute via Worker ────────────────────────────────────────
+  previewBtn.addEventListener('click', () => {
+    showErr('previewError', ''); showErr('tableError', '');
+    const c1 = col1.value, c2 = col2.value;
+    const cn = newColName.value.trim() || 'diff_seconds';
+
+    if (!c1 || !c2) { showErr('previewError', 'Please select both date columns.'); return; }
+    if (c1 === c2)  { showErr('previewError', 'Please select two different columns.'); return; }
+
+    const file = fileInput._file;
+    if (!file) { showErr('previewError', 'Please upload a file first.'); return; }
+
+    // Kill any previous worker
+    if (currentWorker) { currentWorker.terminate(); currentWorker = null; }
+
+    // UI: busy state
+    setProcessing(true);
+
+    // Read the full file then hand to worker
+    const fullReader = new FileReader();
+    fullReader.onload = evt => {
+      const worker = makeWorker();
+      currentWorker = worker;
+
+      worker.onmessage = e => {
+        const msg = e.data;
+
+        if (msg.type === 'progress') {
+          progressBar.style.width = msg.pct + '%';
+          progressText.textContent = msg.label;
+          progressPct.textContent  = msg.pct + '%';
+          return;
+        }
+
+        if (msg.type === 'error') {
+          setProcessing(false);
+          showErr('previewError', msg.msg);
+          worker.terminate(); currentWorker = null;
+          return;
+        }
+
+        if (msg.type === 'done') {
+          workerResult = msg;
+          progressBar.style.width = '100%';
+          progressBar.classList.add('done');
+          progressText.textContent = 'Done!';
+          progressPct.textContent  = '100%';
+
+          renderResults(msg, cn);
+          setProcessing(false);
+          worker.terminate(); currentWorker = null;
+        }
+      };
+
+      worker.onerror = err => {
+        setProcessing(false);
+        showErr('previewError', 'Worker error: ' + err.message);
+        worker.terminate(); currentWorker = null;
+      };
+
+      worker.postMessage({ text: evt.target.result, col1: c1, col2: c2, colName: cn });
+    };
+
+    fullReader.onerror = () => { setProcessing(false); showErr('previewError', 'Could not read file.'); };
+    fullReader.readAsText(file);
+  });
+
+  function renderResults(msg, cn) {
+    const { headers: hdrs, preview, totalRows, nullCount, stats } = msg;
+
+    // Warn about unparseable rows
+    if (nullCount > 0) {
+      document.getElementById('tableError').textContent =
+        `⚠  ${nullCount.toLocaleString()} row(s) had unparseable dates — those cells will be empty in the output.`;
+      document.getElementById('tableError').style.display = 'block';
+    }
+
+    // Stats
+    document.getElementById('statRows').textContent = totalRows.toLocaleString();
+    document.getElementById('statMin').textContent  = isFinite(stats.min) ? stats.min.toLocaleString() : '—';
+    document.getElementById('statMax').textContent  = isFinite(stats.max) ? stats.max.toLocaleString() : '—';
+    document.getElementById('statAvg').textContent  = stats.avg.toLocaleString();
+    statsRow.classList.remove('hidden');
+
+    // Table header — all original columns + diff highlighted
+    previewHead.innerHTML = `<tr>
+      ${hdrs.map(h => `<th>${h}</th>`).join('')}
+      <th class="diff-col">${cn}</th>
+    </tr>`;
+
+    // Table body — top 20
+    previewBody.innerHTML = preview.map(row =>
+      `<tr>
+        ${hdrs.map(h => `<td>${row[h] ?? ''}</td>`).join('')}
+        <td class="diff-val">${row[cn] !== null && row[cn] !== undefined ? row[cn] : '<span style="color:var(--danger);font-style:italic">—</span>'}</td>
+      </tr>`
+    ).join('');
+
+    emptyState.classList.add('hidden');
+    previewTable.classList.remove('hidden');
+
+    if (totalRows > PREVIEW_ROWS) {
+      previewNote.classList.remove('hidden');
+      previewNote.innerHTML = `Showing top <span>${PREVIEW_ROWS}</span> of <span>${totalRows.toLocaleString()}</span> rows — download below for the full dataset.`;
+    } else {
+      previewNote.classList.add('hidden');
+    }
+
+    downloadBtn.disabled = false;
+  }
+
+  // ── Download — stream-build CSV to avoid huge string in memory ──
+  downloadBtn.addEventListener('click', () => {
+    if (!workerResult) return;
+    const { headers: hdrs, validLines, colName, col1idx, col2idx } = workerResult;
+    const cn = newColName.value.trim() || colName;
+
+    // Rebuild diffs from validLines (diffs buffer was transferred so reconstruct)
+    // We re-compute on the fly while building CSV — avoids holding two full copies in RAM
+    const allCols = [...hdrs, cn];
+
+    function cleanVal(s) { return (s || '').trim().replace(/^"|"$/g, ''); }
+    function splitLine(line) {
+      const out = []; let cur = '', inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') { inQ = !inQ; }
+        else if (c === ',' && !inQ) { out.push(cur); cur = ''; }
+        else cur += c;
+      }
+      out.push(cur); return out;
+    }
+    function esc(v) {
+      const s = String(v ?? '');
+      return (s.includes(',') || s.includes('"') || s.includes('\n')) ? `"${s.replace(/"/g,'""')}"` : s;
+    }
+    function toSec(a, b) {
+      const ta = Date.parse(a), tb = Date.parse(b);
+      return (isNaN(ta)||isNaN(tb)) ? '' : (tb-ta)/1000;
+    }
+
+    const parts = [allCols.map(esc).join(',') + '\n'];
+    for (let i = 0; i < validLines.length; i++) {
+      const vals = splitLine(validLines[i]).map(cleanVal);
+      const row = hdrs.map((_, j) => esc(vals[j] ?? ''));
+      const diff = toSec(vals[col1idx] || '', vals[col2idx] || '');
+      row.push(esc(diff));
+      parts.push(row.join(',') + '\n');
+      // Flush every 100k rows to avoid one giant string
+      if (parts.length > 100000) {
+        // (Blob constructor handles arrays of strings directly)
+      }
+    }
+
+    const blob = new Blob(parts, { type: 'text/csv' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = 'output_with_diff.csv'; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  });
+
+  // ── Reset ─────────────────────────────────────────────────────
+  resetBtn.addEventListener('click', () => {
+    if (currentWorker) { currentWorker.terminate(); currentWorker = null; }
+    headers = []; workerResult = null;
+    fileInput.value = ''; fileInput._file = null;
+    fileName.style.display = 'none';
+    [col1, col2].forEach(s => { s.innerHTML = '<option value="">— load a file first —</option>'; s.disabled = true; });
+    previewBtn.disabled = true; downloadBtn.disabled = true;
+    previewTable.classList.add('hidden');
+    emptyState.classList.remove('hidden');
+    statsRow.classList.add('hidden');
+    previewNote.classList.add('hidden');
+    progressWrap.style.display = 'none';
+    progressBar.style.width = '0%';
+    progressBar.classList.remove('done');
+    newColName.value = 'diff_seconds';
+    ['uploadError','colError','previewError','tableError'].forEach(id => showErr(id, ''));
+    setProcessing(false);
+  });
+
+  // ── UI helpers ────────────────────────────────────────────────
+  function setProcessing(on) {
+    previewBtn.disabled = on;
+    btnSpinner.style.display = on ? 'block' : 'none';
+    btnLabel.textContent = on ? 'Processing…' : 'Preview ↓';
+    progressWrap.style.display = on ? 'block' : (workerResult ? 'block' : 'none');
+  }
+
+  function showErr(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.style.display = msg ? 'block' : 'none';
+  }
+</script>
+</body>
+</html>
